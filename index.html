@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>⏰ Time Chase: Catch the Continuous!</title>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  
+  <!-- Font Awesome (иконки) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Roboto', sans-serif;
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      background-attachment: fixed;
+      color: #e0f7fa;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: rgba(10, 30, 50, 0.8);
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5),
+                  0 0 30px rgba(0, 180, 255, 0.2);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(100, 200, 255, 0.2);
+    }
+
+    h1 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 2.8em;
+      color: #00e0ff;
+      text-shadow: 0 0 15px rgba(0, 224, 255, 0.7),
+                   0 0 30px rgba(0, 180, 255, 0.5);
+      margin-bottom: 15px;
+      letter-spacing: 1px;
+    }
+
+    h2 {
+      color: #80d0ff;
+      font-family: 'Orbitron', sans-serif;
+      margin: 20px 0;
+    }
+
+    p {
+      line-height: 1.7;
+      font-size: 1.1em;
+    }
+
+    .level, .boss, #victory {
+      display: none;
+      animation: fadeIn 0.6s ease-out;
+    }
+
+    .active {
+      display: block !important;
+    }
+
+    /* Кнопки — как гаджеты */
+    button {
+      background: linear-gradient(to bottom, #00a2ff, #0077cc);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      margin: 10px;
+      border-radius: 50px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+      box-shadow: 0 5px 15px rgba(0, 100, 255, 0.4);
+      transition: all 0.3s ease;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+    }
+
+    button:hover {
+      background: linear-gradient(to bottom, #00b2ff, #0087e0);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(0, 120, 255, 0.6);
+    }
+
+    button:active {
+      transform: translateY(1px);
+    }
+
+    .option-btn {
+      display: block;
+      margin: 12px auto;
+      width: 80%;
+      background: linear-gradient(to right, #1e88e5, #0d47a1);
+      font-size: 18px;
+      padding: 14px;
+      max-width: 500px;
+    }
+
+    .option-btn:hover {
+      background: linear-gradient(to right, #2196f3, #0d47a1);
+    }
+
+    /* Обратная связь */
+    .feedback {
+      margin: 20px 0;
+      font-weight: bold;
+      min-height: 30px;
+      font-size: 1.1em;
+      text-shadow: 0 0 5px rgba(0,0,0,0.5);
+    }
+
+    .hint {
+      font-style: italic;
+      color: #80deea;
+      margin: 15px;
+      padding: 15px;
+      background: rgba(0, 100, 150, 0.2);
+      border-radius: 10px;
+      border-left: 4px solid #00e0ff;
+      text-align: left;
+      font-size: 0.95em;
+      display: none;
+    }
+
+    /* Анимации */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+
+    .correct {
+      color: #66bb6a;
+      animation: pulse 0.5s ease;
+    }
+
+    .wrong {
+      color: #ef5350;
+      animation: shake 0.5s ease;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-10px); }
+      75% { transform: translateX(10px); }
+    }
+
+    /* Инпуты */
+    input[type="text"] {
+      padding: 12px;
+      width: 80%;
+      max-width: 500px;
+      border-radius: 10px;
+      border: 2px solid #00a2ff;
+      background: rgba(0, 30, 60, 0.8);
+      color: #ffffff;
+      font-size: 16px;
+      outline: none;
+      transition: all 0.3s;
+    }
+
+    input[type="text"]:focus {
+      border-color: #00e0ff;
+      box-shadow: 0 0 15px rgba(0, 224, 255, 0.3);
+    }
+
+    /* Босс — с эффектом печати */
+    #boss h2 {
+      position: relative;
+    }
+
+    #boss h2::after {
+      content: '|';
+      animation: blink 0.8s infinite;
+      color: #ff5722;
+      margin-left: 5px;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+
+    /* Медаль победы */
+    #victory i {
+      font-size: 5em;
+      color: #ffeb3b;
+      text-shadow: 0 0 20px rgba(255, 235, 59, 0.6);
+      margin-bottom: 20px;
+    }
+
+    #victory ul {
+      list-style: none;
+      margin: 20px auto;
+      text-align: left;
+      max-width: 500px;
+    }
+
+    #victory ul li {
+      margin: 10px 0;
+      padding-left: 30px;
+      position: relative;
+    }
+
+    #victory ul li::before {
+      content: '⚡';
+      position: absolute;
+      left: 0;
+      top: 0;
+    }
+
+    /* Мобильная адаптация */
+    @media (max-width: 600px) {
+      h1 {
+        font-size: 2em;
+      }
+      .container {
+        padding: 15px;
+      }
+      button {
+        padding: 10px 18px;
+        font-size: 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1><i class="fas fa-hourglass-half"></i> Time Chase</h1>
+    <p>Ты — агент <strong>Verb Squad</strong>. Злодей <strong>Mr. Mix-Up</strong> перепутал все времена! Поймай Continuous, пока не поздно!</p>
+
+    <!-- Начальный экран -->
+    <div id="start-screen" class="active">
+      <h2>Готов к миссии?</h2>
+      <p>Время не ждёт…</p>
+      <button onclick="showLevel('level1')">
+        <i class="fas fa-rocket"></i> Начать уровень 1: Now Zone
+      </button>
+    </div>
+
+    <!-- УРОВЕНЬ 1: Present Continuous -->
+    <div id="level1" class="level">
+      <h2>📍 Уровень 1: Now Zone</h2>
+      <p><strong>Ситуация:</strong> Ты в кафе. Мужчина пьёт кофе. Он проливает его!</p>
+      <p>Что ты говоришь в репортаже?</p>
+      <div class="options">
+        <button class="option-btn" onclick="checkAnswer(1, 'wrong')">
+          A) He drinks coffee.
+        </button>
+        <button class="option-btn" onclick="checkAnswer(1, 'correct')">
+          B) He is drinking coffee. <i class="fas fa-check-circle"></i>
+        </button>
+        <button class="option-btn" onclick="checkAnswer(1, 'wrong')">
+          C) He drank coffee.
+        </button>
+      </div>
+      <div id="feedback1" class="feedback"></div>
+      <div id="hint1" class="hint">
+        💡 <strong>Подсказка:</strong> Действие происходит СЕЙЧАС → используй <code>am/is/are + V-ing</code>
+      </div>
+      <button id="next1" style="display:none;" onclick="showLevel('level2')">
+        <i class="fas fa-arrow-right"></i> Перейти к уровню 2: Flashback Tunnel
+      </button>
+    </div>
+
+    <!-- УРОВЕНЬ 2: Past Continuous -->
+    <div id="level2" class="level">
+      <h2>📍 Уровень 2: Flashback Tunnel</h2>
+      <p><strong>Ситуация:</strong> Вчера в 8 вечера Сара смотрела телевизор, когда погас свет.</p>
+      <p>Почему мы говорим "was watching"?</p>
+      <div class="options">
+        <button class="option-btn" onclick="checkAnswer(2, 'wrong')">
+          A) Потому что это привычка
+        </button>
+        <button class="option-btn" onclick="checkAnswer(2, 'correct')">
+          B) Потому что действие было в процессе <i class="fas fa-check-circle"></i>
+        </button>
+        <button class="option-btn" onclick="checkAnswer(2, 'wrong')">
+          C) Потому что она закончила
+        </button>
+      </div>
+      <div id="feedback2" class="feedback"></div>
+      <div id="hint2" class="hint">
+        💡 <strong>Подсказка:</strong> Past Continuous — для действий, которые <em>длились</em> в прошлом и могли быть прерваны.
+      </div>
+      <button id="next2" style="display:none;" onclick="showLevel('level3')">
+        <i class="fas fa-arrow-right"></i> Перейти к уровню 3: Future Lab
+      </button>
+    </div>
+
+    <!-- УРОВЕНЬ 3: Future Continuous -->
+    <div id="level3" class="level">
+      <h2>📍 Уровень 3: Future Lab</h2>
+      <p><strong>Ситуация:</strong> Завтра в полночь ты будешь спать.</p>
+      <p>Как правильно сказать?</p>
+      <div class="options">
+        <button class="option-btn" onclick="checkAnswer(3, 'wrong')">
+          A) I will sleep at midnight.
+        </button>
+        <button class="option-btn" onclick="checkAnswer(3, 'correct')">
+          B) I will be sleeping at midnight. <i class="fas fa-check-circle"></i>
+        </button>
+        <button class="option-btn" onclick="checkAnswer(3, 'wrong')">
+          C) I am sleeping at midnight.
+        </button>
+      </div>
+      <div id="feedback3" class="feedback"></div>
+      <div id="hint3" class="hint">
+        💡 <strong>Подсказка:</strong> Future Continuous (will be + V-ing) — для действий, которые <em>будут происходить</em> в конкретный момент в будущем.
+      </div>
+      <button id="next3" style="display:none;" onclick="showLevel('boss')">
+        <i class="fas fa-dragon"></i> Пойти к боссу — Mr. Mix-Up!
+      </button>
+    </div>
+
+    <!-- БОСС -->
+    <div id="boss" class="boss">
+      <h2>👹 Mr. Mix-Up Атакует!</h2>
+      <p>Исправь его грамматические ошибки, чтобы победить!</p>
+
+      <div id="q1">
+        <p><strong>Он говорит:</strong> "I am watching TV every evening."</p>
+        <input type="text" id="ans1" placeholder="Напиши правильное предложение...">
+        <button onclick="checkBoss(1)"><i class="fas fa-check"></i> Проверить</button>
+        <div id="fb1" class="feedback"></div>
+      </div>
+
+      <div id="q2">
+        <p><strong>Он говорит:</strong> "Yesterday at 9, I watch a movie."</p>
+        <input type="text" id="ans2" placeholder="Напиши правильное предложение...">
+        <button onclick="checkBoss(2)"><i class="fas fa-check"></i> Проверить</button>
+        <div id="fb2" class="feedback"></div>
+      </div>
+
+      <div id="q3">
+        <p><strong>Он говорит:</strong> "This time tomorrow, I fly to London."</p>
+        <input type="text" id="ans3" placeholder="Напиши правильное предложение...">
+        <button onclick="checkBoss(3)"><i class="fas fa-check"></i> Проверить</button>
+        <div id="fb3" class="feedback"></div>
+      </div>
+
+      <button id="final" style="display:none;" onclick="winGame()">
+        <i class="fas fa-trophy"></i> Победить Mr. Mix-Up!
+      </button>
+    </div>
+
+    <!-- ПОБЕДА -->
+    <div id="victory" class="boss">
+      <i class="fas fa-award"></i>
+      <h2>🎉 ПОБЕДА!</h2>
+      <h3>Ты — Master of the Moment!</h3>
+      <p>Ты восстановил порядок во времени. Continuous времена снова в безопасности!</p>
+      <ul>
+        <li><strong>Present Continuous:</strong> действия сейчас (I am eating)</li>
+        <li><strong>Past Continuous:</strong> действия в процессе в прошлом (I was eating)</li>
+        <li><strong>Future Continuous:</strong> действия в процессе в будущем (I will be eating)</li>
+      </ul>
+      <button onclick="location.reload()">
+        <i class="fas fa-redo"></i> Играть снова
+      </button>
+    </div>
+  </div>
+
+  <script>
+    function showLevel(id) {
+      document.querySelectorAll('.level, .boss, #victory').forEach(el => el.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      window.scrollTo(0, 0);
+    }
+
+    function checkAnswer(level, result) {
+      const feedback = document.getElementById(`feedback${level}`);
+      const hint = document.getElementById(`hint${level}`);
+      const nextBtn = document.getElementById(`next${level}`);
+
+      if (result === 'correct') {
+        feedback.textContent = "✅ Правильно! Так держать!";
+        feedback.className = 'feedback correct';
+        hint.style.display = 'block';
+        nextBtn.style.display = 'block';
+      } else {
+        feedback.textContent = "❌ Нет, подумай ещё. Вот подсказка:";
+        feedback.className = 'feedback wrong';
+        hint.style.display = 'block';
+      }
+    }
+
+    function checkBoss(qNum) {
+      const input = document.getElementById(`ans${qNum}`).value.trim().toLowerCase();
+      const feedback = document.getElementById(`fb${qNum}`);
+      let correct = false;
+
+      if (qNum === 1) {
+        correct = /watch(ing)? tv every evening/.test(input) && !input.includes("am watching");
+      } else if (qNum === 2) {
+        correct = /was watching|watched/.test(input);
+      } else if (qNum === 3) {
+        correct = /will be flying/.test(input);
+      }
+
+      if (correct) {
+        feedback.textContent = "✅ Верно! Ошибка исправлена!";
+        feedback.className = 'feedback correct';
+        if (qNum === 3) {
+          document.getElementById("final").style.display = "block";
+        }
+      } else {
+        feedback.textContent = "❌ Почти! Подумай о времени...";
+        feedback.className = 'feedback wrong';
+      }
+    }
+
+    function winGame() {
+      document.getElementById("boss").classList.remove("active");
+      document.getElementById("victory").classList.add("active");
+      window.scrollTo(0, 0);
+    }
+  </script>
+</body>
+</html>
